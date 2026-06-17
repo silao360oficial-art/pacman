@@ -92,22 +92,36 @@ canvas{display:block;
 .slbl-mob{font-size:7px;color:#e0b0ff;letter-spacing:1px;display:block;text-shadow:1px 1px 0 #000;}
 .sval-mob{font-family:'Orbitron',monospace;font-size:13px;font-weight:900;display:block;color:#FFD700;text-shadow:1px 1px 0 #000;}
 
-/* D-PAD – mobile only */
-#dpad{width:100%;display:flex;flex-direction:column;align-items:center;
-  gap:4px;padding:6px;background:#1a0033;flex-shrink:0;
-  border-top:4px solid #000;}
-.drow{display:flex;gap:6px;justify-content:center;align-items:center;}
-.cbtn{background:linear-gradient(#4a0080,#2d0057);
-  border:3px solid #000;box-shadow:3px 3px 0 #000;
-  color:#ffd600;font-family:'Bangers',cursive;font-size:22px;letter-spacing:1px;
-  border-radius:6px;cursor:pointer;touch-action:manipulation;
-  width:62px;height:56px;display:flex;align-items:center;justify-content:center;user-select:none;
-  text-shadow:2px 2px 0 #000;}
-.cbtn:active{transform:translate(3px,3px);box-shadow:none;}
-.cbtn.big{width:140px;height:50px;font-size:15px;
-  background:linear-gradient(#c400ff,#7b00ff);color:#fff;}
-.cbtn.pause{background:linear-gradient(#ff6600,#cc4400);width:72px;}
-#start-row{display:flex;gap:8px;}
+/* JOYSTICK – mobile only */
+#joyzone{width:100%;display:flex;flex-shrink:0;align-items:center;justify-content:space-between;
+  padding:8px 16px;background:#1a0033;border-top:4px solid #000;gap:10px;box-sizing:border-box;}
+#joy-base{width:130px;height:130px;border-radius:50%;flex-shrink:0;
+  background:radial-gradient(circle,#3a0070 60%,#1a0033 100%);
+  border:4px solid #7b00ff;box-shadow:0 0 18px #7b00ff,inset 0 0 12px #2d0057;
+  position:relative;touch-action:none;user-select:none;}
+#joy-thumb{width:52px;height:52px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#ff00ff,#7b00ff);
+  border:3px solid #000;box-shadow:0 0 12px #ff00ff,3px 3px 0 #000;
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  pointer-events:none;transition:box-shadow 0.1s;}
+#joy-thumb.active{box-shadow:0 0 22px #ffd600,3px 3px 0 #000;}
+#joy-arrows{position:absolute;inset:0;pointer-events:none;}
+/* flechitas decorativas en el base */
+#joy-base::before{content:'▲';position:absolute;top:4px;left:50%;transform:translateX(-50%);
+  font-size:13px;color:rgba(255,255,255,0.25);}
+#joy-base::after{content:'▼';position:absolute;bottom:4px;left:50%;transform:translateX(-50%);
+  font-size:13px;color:rgba(255,255,255,0.25);}
+.joy-lr{position:absolute;top:50%;transform:translateY(-50%);font-size:13px;color:rgba(255,255,255,0.25);}
+.joy-l{left:5px;}.joy-r{right:5px;}
+/* botones de acción junto al joystick */
+#joy-btns{display:flex;flex-direction:column;gap:10px;align-items:center;flex-shrink:0;}
+.jbtn{border-radius:50%;width:64px;height:64px;display:flex;align-items:center;justify-content:center;
+  font-family:'Bangers',cursive;font-size:15px;letter-spacing:1px;cursor:pointer;
+  border:3px solid #000;box-shadow:3px 3px 0 #000;touch-action:manipulation;user-select:none;
+  text-shadow:1px 1px 0 #000;}
+.jbtn:active{transform:translate(3px,3px);box-shadow:none;}
+#jbtn-start{background:linear-gradient(#c400ff,#7b00ff);color:#fff;}
+#jbtn-pause{background:linear-gradient(#ff6600,#cc4400);color:#fff;}
 
 /* COUNTDOWN – cómic */
 #countdown{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
@@ -119,15 +133,64 @@ canvas{display:block;
 
 /* DESKTOP */
 @media(min-width:700px){
-  #dpad{display:none;}
+  #joyzone{display:none;}
   #sbar{display:none;}
   #rpanel{display:flex;}
+  #landscape-ui{display:none!important;}
 }
-/* MOBILE */
-@media(max-width:699px){
+/* MOBILE PORTRAIT */
+@media(max-width:699px) and (orientation:portrait){
   #rpanel{display:none!important;}
   #main{flex-direction:column;}
+  #landscape-ui{display:none!important;}
+  #landscape-hint{display:flex!important;}
 }
+/* MOBILE LANDSCAPE – modo inmersivo */
+@media(max-width:999px) and (orientation:landscape){
+  #rpanel{display:none!important;}
+  #topbar{display:none!important;}
+  #lbar{display:none!important;}
+  #sbar{display:none!important;}
+  #msg{display:none!important;}
+  #landscape-hint{display:none!important;}
+  /* canvas ocupa todo */
+  html,body{overflow:hidden;}
+  #main{flex:1;flex-direction:row;overflow:hidden;}
+  #cleft{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  #cwrap{padding:0;flex:1;display:flex;align-items:center;justify-content:center;}
+  /* joystick al lado derecho en landscape */
+  #joyzone{
+    width:160px!important;height:100%!important;flex-direction:column!important;
+    border-top:none!important;border-left:4px solid #000!important;
+    padding:12px 8px!important;justify-content:center!important;
+  }
+  #joy-btns{flex-direction:column;}
+  /* botón para salir del modo landscape */
+  #landscape-ui{display:flex!important;position:fixed;top:6px;left:6px;z-index:100;
+    flex-direction:column;gap:4px;align-items:flex-start;}
+}
+
+/* HINT de gira pantalla */
+#landscape-hint{
+  display:none;
+  width:100%;padding:5px 8px;background:linear-gradient(#2d0057,#1a0033);
+  border-bottom:3px solid #7b00ff;align-items:center;justify-content:center;
+  gap:6px;flex-shrink:0;}
+#landscape-hint span{font-family:'Bangers',cursive;font-size:13px;color:#ffd600;
+  letter-spacing:1px;text-shadow:1px 1px 0 #000;}
+.hint-arrow{font-size:20px;animation:spinHint 2s ease-in-out infinite;}
+@keyframes spinHint{
+  0%{transform:rotate(0deg);}30%{transform:rotate(90deg);}
+  60%{transform:rotate(90deg);}100%{transform:rotate(0deg);}
+}
+
+/* Botón volver portrait */
+#btn-portrait{
+  background:linear-gradient(#2d0057,#4a0080);border:3px solid #7b00ff;
+  border-radius:8px;color:#ffd600;font-family:'Bangers',cursive;font-size:13px;
+  letter-spacing:1px;padding:4px 8px;cursor:pointer;box-shadow:2px 2px 0 #000;
+  text-shadow:1px 1px 0 #000;display:flex;align-items:center;gap:4px;}
+#btn-portrait:active{transform:translate(2px,2px);box-shadow:none;}
 
 /* SALIR – siempre visible arriba derecha */
 #salir-btn{position:fixed;top:8px;right:8px;z-index:30;
@@ -310,21 +373,30 @@ canvas{display:block;
   </div>
 </div>
 
-<!-- D-PAD – mobile -->
-<div id="dpad">
-  <div class="drow"><div class="cbtn" id="btn-u">▲</div></div>
-  <div class="drow">
-    <div class="cbtn" id="btn-l">◀</div>
-    <div id="start-row">
-      <div class="cbtn big" id="btn-start">▶ JUGAR</div>
-      <div class="cbtn pause" id="btn-pause">⏸</div>
-    </div>
-    <div class="cbtn" id="btn-r">▶</div>
+<!-- JOYSTICK – mobile -->
+<div id="joyzone">
+  <div id="joy-base">
+    <div id="joy-thumb"></div>
+    <span class="joy-lr joy-l">◀</span>
+    <span class="joy-lr joy-r">▶</span>
   </div>
-  <div class="drow"><div class="cbtn" id="btn-d">▼</div></div>
+  <div id="joy-btns">
+    <button class="jbtn" id="jbtn-start">▶ JUGAR</button>
+    <button class="jbtn" id="jbtn-pause">⏸ PAUSA</button>
+  </div>
 </div>
 
-<!-- CRACK OVERLAY (terremoto) -->
+<!-- HINT: gira para modo inmersivo (solo portrait móvil) -->
+<div id="landscape-hint">
+  <span class="hint-arrow">↻</span>
+  <span>GIRA para modo JUEGO COMPLETO</span>
+  <span class="hint-arrow">↻</span>
+</div>
+
+<!-- UI landscape: botón para volver (solo landscape móvil) -->
+<div id="landscape-ui">
+  <button id="btn-portrait">↩ SALIR</button>
+</div>
 <div id="crack-overlay"></div>
 <!-- QUAKE WORD -->
 <div id="quake-word">💥 CAPTURADO!</div>
@@ -374,34 +446,17 @@ const cv=document.getElementById('c'), ctx=cv.getContext('2d');
 const cwrap=document.getElementById('cwrap');
 
 // ── AUDIO ENGINE (Web Audio API — sin archivos externos) ─────────
-let audioCtx=null, audioMuted=false, wakaTick=0;
-// bgRunning/bgOsc/bgGain — mantenidos como stubs para no romper referencias
-let bgOsc=null, bgGain=null, bgRunning=false;
+let audioCtx=null, audioMuted=false, wakaTick=0, bgOsc=null, bgGain=null, bgRunning=false;
 
 function getAC(){
   if(!audioCtx){
     try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}
   }
-  // Siempre reanudar — en móvil se suspende entre partidas o al volver del overlay
-  if(audioCtx&&audioCtx.state==='suspended') audioCtx.resume().catch(()=>{});
+  if(audioCtx&&audioCtx.state==='suspended') audioCtx.resume();
   return audioCtx;
 }
 
-// Desbloquea el AudioContext con un micro-sonido silencioso para iOS/Android
-function unlockAudio(){
-  const ac=getAC(); if(!ac)return;
-  if(ac.state==='running')return;
-  ac.resume().then(()=>{
-    // dispara un tono de 0 volumen para activar el contexto en Safari/Chrome mobile
-    const o=ac.createOscillator();
-    const g=ac.createGain();
-    g.gain.setValueAtTime(0.0001,ac.currentTime);
-    o.connect(g); g.connect(ac.destination);
-    o.start(); o.stop(ac.currentTime+0.001);
-  }).catch(()=>{});
-}
-
-// Genera un tono simple con envolvente
+// Genera un tono simple con envolvente ADSR
 function playTone(freq, type, duration, volume=0.18, delay=0){
   if(audioMuted)return;
   const ac=getAC(); if(!ac)return;
@@ -416,10 +471,10 @@ function playTone(freq, type, duration, volume=0.18, delay=0){
   osc.start(t); osc.stop(t+duration+0.05);
 }
 
-// Secuencia de tonos [{f,d}] — devuelve duración total en ms
+// Secuencia de tonos [{f,d}]
 function playSeq(notes, type='square', vol=0.15){
-  if(audioMuted)return 0;
-  const ac=getAC(); if(!ac)return 0;
+  if(audioMuted)return;
+  const ac=getAC(); if(!ac)return;
   let t=ac.currentTime;
   notes.forEach(({f,d})=>{
     const osc=ac.createOscillator();
@@ -431,12 +486,11 @@ function playSeq(notes, type='square', vol=0.15){
     osc.start(t); osc.stop(t+d+0.02);
     t+=d;
   });
-  return notes.reduce((s,n)=>s+n.d,0)*1000;
 }
 
 // ── SONIDOS ESPECÍFICOS ──────────────────────────────────────────
 
-// Waka-waka alternado (comer punto)
+// Waka-waka alternado (comer punto) — dos tonos que se alternan
 function sndWaka(){
   if(audioMuted)return;
   wakaTick++;
@@ -444,53 +498,52 @@ function sndWaka(){
   playTone(f,'square',0.07,0.10);
 }
 
-// Comer power pellet — sube rápido, con impacto
+// Comer power pellet
 function sndPower(){
   if(audioMuted)return;
   playSeq([
-    {f:180,d:0.05},{f:240,d:0.05},{f:320,d:0.05},
-    {f:440,d:0.05},{f:600,d:0.07},{f:880,d:0.10},
-    {f:660,d:0.06},{f:880,d:0.14}
-  ],'sawtooth',0.18);
+    {f:200,d:0.06},{f:280,d:0.06},{f:360,d:0.06},
+    {f:480,d:0.06},{f:600,d:0.08},{f:800,d:0.12}
+  ],'sawtooth',0.14);
 }
 
-// Comer fantasma — pitido descendente cómico
+// Comer fantasma
 function sndEatGhost(){
   if(audioMuted)return;
   playSeq([
-    {f:1000,d:0.04},{f:800,d:0.04},{f:600,d:0.04},
-    {f:400,d:0.04},{f:700,d:0.04},{f:1000,d:0.09}
-  ],'square',0.20);
+    {f:900,d:0.05},{f:700,d:0.05},{f:500,d:0.05},
+    {f:300,d:0.05},{f:600,d:0.05},{f:900,d:0.08}
+  ],'square',0.18);
 }
 
-// Muerte pac-man — bajada dramática
+// Muerte pac-man
 function sndDeath(){
   if(audioMuted)return;
   playSeq([
     {f:600,d:0.07},{f:550,d:0.07},{f:500,d:0.07},
     {f:450,d:0.07},{f:400,d:0.07},{f:350,d:0.07},
     {f:300,d:0.07},{f:250,d:0.07},{f:200,d:0.10},
-    {f:150,d:0.16}
-  ],'sawtooth',0.20);
+    {f:150,d:0.14}
+  ],'sawtooth',0.18);
 }
 
-// Subir de nivel — fanfarria ascendente
+// Subir de nivel
 function sndLevelUp(){
   if(audioMuted)return;
   playSeq([
     {f:330,d:0.08},{f:440,d:0.08},{f:550,d:0.08},
-    {f:660,d:0.08},{f:880,d:0.08},{f:1100,d:0.18}
-  ],'triangle',0.22);
+    {f:660,d:0.08},{f:880,d:0.08},{f:1100,d:0.14}
+  ],'triangle',0.20);
 }
 
-// Game over — bajada lúgubre
+// Game over
 function sndGameOver(){
   if(audioMuted)return;
   playSeq([
-    {f:440,d:0.13},{f:415,d:0.13},{f:392,d:0.13},
-    {f:370,d:0.13},{f:349,d:0.13},{f:330,d:0.25},
-    {f:220,d:0.40}
-  ],'sawtooth',0.22);
+    {f:440,d:0.12},{f:415,d:0.12},{f:392,d:0.12},
+    {f:370,d:0.12},{f:349,d:0.12},{f:330,d:0.22},
+    {f:220,d:0.35}
+  ],'sawtooth',0.20);
 }
 
 // Victoria
@@ -498,53 +551,41 @@ function sndWin(){
   if(audioMuted)return;
   playSeq([
     {f:523,d:0.10},{f:659,d:0.10},{f:784,d:0.10},
-    {f:1047,d:0.10},{f:784,d:0.06},{f:1047,d:0.25}
-  ],'triangle',0.22);
+    {f:1047,d:0.10},{f:784,d:0.06},{f:1047,d:0.22}
+  ],'triangle',0.20);
 }
 
-// Comer fruta — jingle largo y épico que dura mientras el poder gigante
-// (~3 segundos: fanfarria + arpegios + remate)
+// Comer fruta
 function sndFruit(){
   if(audioMuted)return;
   playSeq([
-    // Fanfarria inicial
-    {f:523,d:0.08},{f:659,d:0.08},{f:784,d:0.08},{f:1047,d:0.10},
-    // Arpegios rápidos subiendo
-    {f:880,d:0.06},{f:1047,d:0.06},{f:1175,d:0.06},{f:1319,d:0.08},
-    // Bajada dramática
-    {f:1047,d:0.07},{f:880,d:0.07},{f:784,d:0.07},
-    // Remate triunfal
-    {f:659,d:0.07},{f:784,d:0.07},{f:1047,d:0.07},{f:1319,d:0.10},
-    {f:1047,d:0.06},{f:1319,d:0.06},{f:1568,d:0.20},
-    // Cola final
-    {f:1319,d:0.08},{f:1047,d:0.08},{f:784,d:0.12}
-  ],'triangle',0.22);
+    {f:800,d:0.06},{f:1000,d:0.06},{f:1200,d:0.10}
+  ],'triangle',0.18);
 }
 
-// Countdown — bip descendente por número
+// Countdown (bip por número)
 function sndCountdown(){
   if(audioMuted)return;
-  playTone(660,'triangle',0.14,0.20);
+  playTone(660,'triangle',0.12,0.18);
 }
 
-// Inicio de partida — jingle de arranque
+// Inicio — jingle rápido de arranque
 function sndStart(){
   if(audioMuted)return;
   playSeq([
     {f:330,d:0.08},{f:330,d:0.08},{f:330,d:0.08},
-    {f:262,d:0.12},{f:330,d:0.10},{f:392,d:0.22}
-  ],'square',0.20);
+    {f:262,d:0.12},{f:330,d:0.10},{f:392,d:0.20}
+  ],'square',0.18);
 }
 
-// ── SIN MÚSICA DE FONDO ──────────────────────────────────────────
-// Funciones mantenidas como stubs para no romper el resto del código
+// ── MÚSICA DE FONDO (loop suave con osciladores) ─────────────────
+// Melodía tipo Pac-Man clásica simplificada: re-sintetizada
 function stopBgMusic(){ bgRunning=false; }
-function startBgMusic(){ /* sin música de fondo */ }
-function pauseBgMusic(p){ /* sin música de fondo */ }
+function startBgMusic(){ /* sin música */ }
+function pauseBgMusic(p){ /* sin música */ }
 
-// Botón mute — solo silencia efectos de sonido
+// Botón mute
 document.getElementById('btn-mute').addEventListener('click',()=>{
-  unlockAudio(); // primer toque desbloquea AudioContext
   audioMuted=!audioMuted;
   document.getElementById('btn-mute').textContent=audioMuted?'🔇':'🔊';
 });
@@ -556,15 +597,53 @@ let S=20;
 function resizeCanvas(){
   const rp=document.getElementById('rpanel');
   const rpW=(rp&&rp.offsetParent)?rp.offsetWidth:0;
-  const maxW=window.innerWidth - rpW - 16;
-  const maxH=cwrap.clientHeight - 8;
+  const isLandscape=window.innerWidth>window.innerHeight;
+  const isMobile=Math.min(window.innerWidth,window.innerHeight)<700;
+  let reservedW=rpW+16;
+  let reservedH=80;
+  if(isMobile&&!isLandscape){
+    // portrait móvil: descontar topbar+lbar+sbar+hint+msg+joyzone
+    reservedH=340;
+  } else if(isMobile&&isLandscape){
+    // landscape móvil: joyzone es columna lateral ~160px
+    reservedW+=165;
+    reservedH=16;
+  }
+  const maxW=window.innerWidth - reservedW;
+  const maxH=window.innerHeight - reservedH;
   const sw=Math.floor(maxW/C);
   const sh=Math.floor(maxH/R);
-  S=Math.max(14, Math.min(sw,sh,58));
+  S=Math.max(10, Math.min(sw,sh,58));
   cv.width=C*S; cv.height=R*S;
 }
 resizeCanvas();
 window.addEventListener('resize',()=>{resizeCanvas();if(!running)drawAll();});
+
+// ── ORIENTACIÓN: landscape inmersivo ────────────────────────────
+function handleOrientation(){
+  const isLandscape=window.innerWidth>window.innerHeight;
+  const isMobile=Math.min(window.innerWidth,window.innerHeight)<700;
+  if(isMobile&&isLandscape){
+    // Intentar pantalla completa en landscape
+    const el=document.documentElement;
+    if(el.requestFullscreen&&!document.fullscreenElement){
+      el.requestFullscreen().catch(()=>{});
+    }
+  } else if(!isLandscape&&document.fullscreenElement){
+    document.exitFullscreen().catch(()=>{});
+  }
+  resizeCanvas();
+  if(!running)drawAll();
+}
+window.addEventListener('resize',handleOrientation);
+window.screen&&window.screen.orientation&&
+  window.screen.orientation.addEventListener('change',handleOrientation);
+
+document.getElementById('btn-portrait').addEventListener('click',()=>{
+  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
+  // Si el navegador no soporta exitFullscreen, el usuario simplemente gira
+  if(running){paused=true;pauseBgMusic(true);}
+});
 
 // ── SUPABASE ────────────────────────────────────────────────────
 const SB_URL='https://irekcyeoumxnwbtonfup.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlyZWtjeWVvdW14bndidG9uZnVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMTczMzAsImV4cCI6MjA5NDc5MzMzMH0.gzmCwhJBeaabl83Q4W6cMhpk0Ofwg0OrHaYou9_ksL0';
@@ -1261,12 +1340,89 @@ async function endGame(win){
 
 // ── CONTROLS ──────────────────────────────────────────────────
 function setDir(dx,dy){nd={x:dx,y:dy};}
-document.getElementById('btn-u').addEventListener('pointerdown',()=>setDir(0,-1));
-document.getElementById('btn-d').addEventListener('pointerdown',()=>setDir(0,1));
-document.getElementById('btn-l').addEventListener('pointerdown',()=>setDir(-1,0));
-document.getElementById('btn-r').addEventListener('pointerdown',()=>setDir(1,0));
-document.getElementById('btn-pause').addEventListener('click',()=>{paused=!paused;pauseBgMusic(paused);});
-document.getElementById('btn-start').addEventListener('click',startGame);
+// ── JOYSTICK ────────────────────────────────────────────────────
+(function(){
+  const base=document.getElementById('joy-base');
+  const thumb=document.getElementById('joy-thumb');
+  if(!base)return;
+  const R=base.offsetWidth/2||65; // radio del base
+  const TR=52/2; // radio del thumb
+  const DEAD=14; // zona muerta centro en px
+  let active=false,startX=0,startY=0;
+  let lastDir=null; // {dc,dr} última dirección enviada
+  let dirInterval=null;
+
+  function getCenter(){
+    const rect=base.getBoundingClientRect();
+    return{x:rect.left+rect.width/2,y:rect.top+rect.height/2};
+  }
+
+  function applyDir(dx,dy){
+    const dist=Math.hypot(dx,dy);
+    if(dist<DEAD){
+      // zona muerta — no cambiar dirección
+      lastDir=null;
+      clearInterval(dirInterval);dirInterval=null;
+      thumb.style.transform='translate(-50%,-50%)';
+      thumb.classList.remove('active');
+      return;
+    }
+    // mover thumb visualmente (clampeado al radio)
+    const maxD=R-TR-4;
+    const ratio=Math.min(dist,maxD)/dist;
+    const tx=dx*ratio, ty=dy*ratio;
+    thumb.style.transform=`translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px))`;
+    thumb.classList.add('active');
+
+    // determinar dirección dominante
+    let dc=0,dr=0;
+    if(Math.abs(dx)>=Math.abs(dy)){dc=dx>0?1:-1;}
+    else{dr=dy>0?1:-1;}
+
+    const key=dc+'_'+dr;
+    if(lastDir!==key){
+      lastDir=key;
+      setDir(dc,dr);
+      // repetir mientras se mantiene presionado (para movimiento continuo)
+      clearInterval(dirInterval);
+      dirInterval=setInterval(()=>setDir(dc,dr),80);
+    }
+  }
+
+  function onStart(e){
+    e.preventDefault();
+    active=true;
+    const pt=e.touches?e.touches[0]:e;
+    const c=getCenter();
+    startX=c.x;startY=c.y;
+    // Si toca directo en el base, usar posición del toque como referencia
+    applyDir(pt.clientX-startX,pt.clientY-startY);
+  }
+  function onMove(e){
+    e.preventDefault();
+    if(!active)return;
+    const pt=e.touches?e.touches[0]:e;
+    applyDir(pt.clientX-startX,pt.clientY-startY);
+  }
+  function onEnd(e){
+    active=false;lastDir=null;
+    clearInterval(dirInterval);dirInterval=null;
+    thumb.style.transform='translate(-50%,-50%)';
+    thumb.classList.remove('active');
+  }
+
+  base.addEventListener('touchstart',onStart,{passive:false});
+  base.addEventListener('touchmove',onMove,{passive:false});
+  base.addEventListener('touchend',onEnd,{passive:false});
+  base.addEventListener('touchcancel',onEnd,{passive:false});
+  // También funciona con mouse (para pruebas en desktop)
+  base.addEventListener('mousedown',onStart);
+  window.addEventListener('mousemove',(e)=>{if(active)onMove(e);});
+  window.addEventListener('mouseup',onEnd);
+})();
+
+document.getElementById('jbtn-pause').addEventListener('click',()=>{paused=!paused;pauseBgMusic(paused);});
+document.getElementById('jbtn-start').addEventListener('click',startGame);
 
 document.addEventListener('keydown',e=>{
   // No capturar teclas de juego si el usuario está escribiendo en un input
@@ -1290,7 +1446,7 @@ cv.addEventListener('touchend',e=>{
 
 function startGame(){
   stopBgMusic();
-  unlockAudio(); // desbloquear/reanudar AudioContext en cada partida nueva
+  getAC(); // desbloquear audio en primer toque
   const nick=document.getElementById('nick-input').value.trim();
   playerNick=nick||randomNick();
   nkdEl.textContent=playerNick.slice(0,9);
