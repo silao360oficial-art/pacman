@@ -92,22 +92,53 @@ canvas{display:block;
 .slbl-mob{font-size:7px;color:#e0b0ff;letter-spacing:1px;display:block;text-shadow:1px 1px 0 #000;}
 .sval-mob{font-family:'Orbitron',monospace;font-size:13px;font-weight:900;display:block;color:#FFD700;text-shadow:1px 1px 0 #000;}
 
-/* D-PAD – mobile only */
-#dpad{width:100%;display:flex;flex-direction:column;align-items:center;
-  gap:4px;padding:6px;background:#1a0033;flex-shrink:0;
-  border-top:4px solid #000;}
-.drow{display:flex;gap:6px;justify-content:center;align-items:center;}
-.cbtn{background:linear-gradient(#4a0080,#2d0057);
-  border:3px solid #000;box-shadow:3px 3px 0 #000;
-  color:#ffd600;font-family:'Bangers',cursive;font-size:22px;letter-spacing:1px;
-  border-radius:6px;cursor:pointer;touch-action:manipulation;
-  width:62px;height:56px;display:flex;align-items:center;justify-content:center;user-select:none;
-  text-shadow:2px 2px 0 #000;}
-.cbtn:active{transform:translate(3px,3px);box-shadow:none;}
-.cbtn.big{width:140px;height:50px;font-size:15px;
-  background:linear-gradient(#c400ff,#7b00ff);color:#fff;}
-.cbtn.pause{background:linear-gradient(#ff6600,#cc4400);width:72px;}
-#start-row{display:flex;gap:8px;}
+/* ── JOYSTICK FIJO — debajo del canvas, nunca se mueve ── */
+#dpad{
+  width:100%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-around;
+  padding:6px 12px;
+  background:linear-gradient(#1a0033,#0d001a);
+  border-top:4px solid #000;
+  box-shadow:0 -2px 0 #5500aa;
+  overscroll-behavior:none;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+}
+/* Base del joystick */
+#joy-base{
+  width:110px;height:110px;border-radius:50%;flex-shrink:0;
+  background:radial-gradient(circle at 40% 40%,#3a0070,#1a0033);
+  border:4px solid #7b00ff;
+  box-shadow:0 0 16px #7b00ff88,inset 0 0 10px #2d0057;
+  position:relative;touch-action:none;
+}
+/* Indicadores de dirección en el base */
+#joy-base::before{content:'▲ ▼';color:rgba(255,255,255,0.2);font-size:10px;
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  letter-spacing:8px;pointer-events:none;}
+#joy-thumb{
+  width:46px;height:46px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#ff00ff,#7b00ff 60%,#3d0090);
+  border:3px solid rgba(255,255,255,0.6);
+  box-shadow:0 0 12px #ff00ffaa,2px 3px 0 rgba(0,0,0,0.5);
+  position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  transition:box-shadow 0.08s;
+}
+#joy-thumb.active{box-shadow:0 0 22px #ffd600,2px 3px 0 rgba(0,0,0,0.5);}
+/* Botones de acción al lado del joystick */
+#joy-actions{display:flex;flex-direction:column;gap:8px;align-items:center;}
+.jact{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:'Bangers',cursive;font-size:13px;letter-spacing:1px;cursor:pointer;
+  border:3px solid #000;box-shadow:3px 3px 0 #000;touch-action:manipulation;
+  user-select:none;text-shadow:1px 1px 0 #000;color:#fff;}
+.jact:active{transform:translate(3px,3px);box-shadow:none;}
+#jact-start{background:linear-gradient(#00c853,#00701e);}
+#jact-pause{background:linear-gradient(#ff6600,#cc3300);}
+/* Quitar btn-enter-fullscreen del dpad — no necesario */
+#btn-enter-fullscreen{display:none!important;}
 
 /* DESKTOP */
 @media(min-width:700px){
@@ -121,6 +152,16 @@ canvas{display:block;
   #rpanel{display:none!important;}
   #main{flex-direction:column;}
 }
+/* PANTALLAS MUY PEQUEÑAS — ocultar links externos, dejar espacio a SALIR */
+@media(max-width:430px){
+  .tbtn-app,.tbtn-web,.tbtn-fb{display:none!important;}
+  #brand-img{width:30px;height:30px;}
+  #brand-title{font-size:15px;}
+  #brand-sub{font-size:7px;}
+}
+@media(max-width:360px){
+  .tbtn-champ{display:none!important;}
+}
 #countdown{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
   font-family:'Bangers',cursive;font-size:130px;color:#ffd600;
   text-shadow:6px 6px 0 #000,0 0 40px #ff00ff;
@@ -128,87 +169,15 @@ canvas{display:block;
   -webkit-text-stroke:3px #000;
   animation:comicShake 0.3s ease-in-out infinite;}
 
-/* ── MODO INMERSIVO: body.game-fullscreen ───────────────────────*/
-body.game-fullscreen #topbar,
-body.game-fullscreen #lbar,
-body.game-fullscreen #sbar,
-body.game-fullscreen #msg,
-body.game-fullscreen #salir-btn,
-body.game-fullscreen #dpad{display:none!important;}
+/* Fullscreen mode removed — mobile-first portrait layout is default */
 
-body.game-fullscreen{
-  overflow:hidden;
-  position:fixed;inset:0; /* evita CUALQUIER scroll/bounce en iOS */
-  width:100%;height:100%;}
-body.game-fullscreen #main{
-  position:fixed;inset:0;
-  display:flex;flex-direction:column;
-  overflow:hidden;}
-body.game-fullscreen #cleft{
-  flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  overflow:hidden;}
-body.game-fullscreen #cwrap{
-  padding:0;width:100%;height:100%;
-  display:flex;align-items:center;justify-content:center;
-  background:#000;overflow:hidden;}
-body.game-fullscreen canvas{
-  /* CSS visual only — el tamaño real lo maneja resizeCanvas() */
-  border:none!important;
-  box-shadow:none!important;
-  display:block;}
-
-/* Joystick flotante sobre el canvas */
-#floating-joy{
-  display:none;
-  position:fixed;bottom:20px;left:20px;z-index:200;
-  touch-action:none;user-select:none;}
-body.game-fullscreen #floating-joy{display:block;}
-
-#fjoy-base{
-  width:120px;height:120px;border-radius:50%;
-  background:rgba(100,0,180,0.45);
-  border:3px solid rgba(255,255,255,0.3);
-  box-shadow:0 0 20px rgba(123,0,255,0.5);
-  position:relative;backdrop-filter:blur(4px);}
-#fjoy-thumb{
-  width:48px;height:48px;border-radius:50%;
-  background:radial-gradient(circle at 35% 35%,rgba(255,0,255,0.85),rgba(100,0,200,0.85));
-  border:2px solid rgba(255,255,255,0.5);
-  box-shadow:0 0 10px rgba(255,0,255,0.6);
-  position:absolute;top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  pointer-events:none;}
-
-/* Botón salir modo inmersivo */
-#btn-exit-fullscreen{
-  display:none;
-  position:fixed;top:10px;right:10px;z-index:200;
-  width:44px;height:44px;border-radius:50%;
-  background:rgba(180,0,0,0.7);border:2px solid rgba(255,255,255,0.4);
-  color:#fff;font-size:22px;font-family:'Bangers',cursive;
-  cursor:pointer;backdrop-filter:blur(4px);
-  box-shadow:0 0 12px rgba(255,0,0,0.5);
-  display:none;align-items:center;justify-content:center;}
-body.game-fullscreen #btn-exit-fullscreen{display:flex!important;}
-
-/* Botón JUGAR grande en dpad (solo móvil) */
-#btn-enter-fullscreen{
-  width:160px;height:54px;border-radius:8px;
-  font-family:'Bangers',cursive;font-size:22px;letter-spacing:2px;
-  cursor:pointer;color:#fff;text-shadow:1px 1px 0 #003010;
-  background:linear-gradient(#00e676,#00a040);
-  border:4px solid #000;box-shadow:4px 4px 0 #005020;
-  touch-action:manipulation;}
-#btn-enter-fullscreen:active{transform:translate(4px,4px);box-shadow:none;}
-
-/* SALIR – siempre visible arriba derecha */
-#salir-btn{position:fixed;top:8px;right:8px;z-index:30;
-  padding:6px 16px;border-radius:6px;font-family:'Bangers',cursive;
-  font-size:18px;letter-spacing:2px;cursor:pointer;color:#fff;
+/* SALIR – ahora dentro del topbar, lado izquierdo */
+#salir-btn{flex-shrink:0;
+  padding:4px 10px;border-radius:5px;font-family:'Bangers',cursive;
+  font-size:13px;letter-spacing:1px;cursor:pointer;color:#fff;
   background:linear-gradient(#ff1744,#b71c1c);
-  border:3px solid #000;box-shadow:3px 3px 0 #5a0000;text-shadow:1px 1px 0 #5a0000;}
-#salir-btn:active{transform:translate(3px,3px);box-shadow:none;}
+  border:3px solid #000;box-shadow:2px 2px 0 #5a0000;text-shadow:1px 1px 0 #5a0000;}
+#salir-btn:active{transform:translate(2px,2px);box-shadow:none;}
 
 /* OVERLAY */
 #overlay{position:fixed;inset:0;
@@ -330,6 +299,7 @@ body.game-fullscreen #btn-exit-fullscreen{display:flex!important;}
 <body>
 
 <div id="topbar">
+  <button id="salir-btn">✖ SALIR</button>
   <img id="brand-img" src="data:image/jpeg;base64,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" alt="Silao360">
   <div id="brand-text">
     <div id="brand-title">ENCUESTA SILAO</div>
@@ -343,10 +313,6 @@ body.game-fullscreen #btn-exit-fullscreen{display:flex!important;}
 </div>
 
 <div id="lbar">
-  <div class="lbar-links">
-    <a class="lbar-link lbar-app" href="https://silao360.com.mx/" target="_blank">📊 silao360.com.mx</a>
-    <a class="lbar-link lbar-web" href="https://silao360.com" target="_blank">🌐 silao360.com</a>
-  </div>
   <div style="display:flex;gap:5px;align-items:center;">
     <span class="ltag">🥇 LÍDER</span>
     <span id="leader-wave"></span>
@@ -383,27 +349,14 @@ body.game-fullscreen #btn-exit-fullscreen{display:flex!important;}
   </div>
 </div>
 
-<!-- D-PAD – mobile normal view -->
+<!-- JOYSTICK FIJO — mobile -->
 <div id="dpad">
-  <div class="drow"><div class="cbtn" id="btn-u">▲</div></div>
-  <div class="drow">
-    <div class="cbtn" id="btn-l">◀</div>
-    <div id="start-row">
-      <button id="btn-enter-fullscreen">⛶ JUGAR</button>
-      <div class="cbtn pause" id="btn-pause">⏸</div>
-    </div>
-    <div class="cbtn" id="btn-r">▶</div>
+  <div id="joy-base"><div id="joy-thumb"></div></div>
+  <div id="joy-actions">
+    <button class="jact" id="jact-start">▶<br>JUGAR</button>
+    <button class="jact" id="jact-pause">⏸<br>PAUSA</button>
   </div>
-  <div class="drow"><div class="cbtn" id="btn-d">▼</div></div>
 </div>
-
-<!-- JOYSTICK FLOTANTE (solo en modo inmersivo) -->
-<div id="floating-joy">
-  <div id="fjoy-base"><div id="fjoy-thumb"></div></div>
-</div>
-
-<!-- Botón salir modo inmersivo -->
-<button id="btn-exit-fullscreen">×</button>
 
 <!-- CRACK OVERLAY (terremoto) -->
 <div id="crack-overlay"></div>
@@ -414,7 +367,7 @@ body.game-fullscreen #btn-exit-fullscreen{display:flex!important;}
 <div id="countdown"></div>
 
 <!-- FRUIT POPUP -->
-<div id="fruit-pop" id="fruit-pop"></div>
+<div id="fruit-pop"></div>
 
 <!-- SALIR – siempre visible -->
 <button id="salir-btn">✖ SALIR</button>
@@ -600,43 +553,38 @@ document.getElementById('btn-mute').addEventListener('click',()=>{
 });
 
 // Mapa: 21 cols x 21 filas
-const C=21,R=21,WALL=1,DOT=2,PWR=3,EMP=0,FRUIT_CELL=4;
+// Mapa: 15 cols x 17 filas  — MOBILE-FIRST (celdas grandes)
+const C=15,R=17,WALL=1,DOT=2,PWR=3,EMP=0,FRUIT_CELL=4;
 let S=20;
 
+// Tamaño pac-man relativo a celda
+// pacSize defined below near draw functions
+
 function resizeCanvas(){
-  const fs=document.body.classList.contains('game-fullscreen');
-  if(fs){
-    // Toda la pantalla disponible, celda cuadrada máxima
-    const avW=window.innerWidth;
-    const avH=window.innerHeight;
-    const sw=Math.floor(avW/C);
-    const sh=Math.floor(avH/R);
-    S=Math.max(10, Math.min(sw,sh));
-  } else {
-    const rp=document.getElementById('rpanel');
-    const rpW=(rp&&rp.offsetParent)?rp.offsetWidth:0;
-    const maxW=window.innerWidth - rpW - 16;
-    const maxH=cwrap.clientHeight - 8;
-    const sw=Math.floor(maxW/C);
-    const sh=Math.floor(maxH/R);
-    S=Math.max(14, Math.min(sw,sh,58));
-  }
+  const topbar=document.getElementById('topbar');
+  const lbar=document.getElementById('lbar');
+  const sbar=document.getElementById('sbar');
+  const msg=document.getElementById('msg');
+  const dpad=document.getElementById('dpad');
+  // Calcular altura disponible para el canvas
+  const tb=topbar?topbar.offsetHeight:0;
+  const lb=lbar?lbar.offsetHeight:0;
+  const sb=sbar?sbar.offsetHeight:0;
+  const mg=msg?msg.offsetHeight:0;
+  const dp=dpad?dpad.offsetHeight:0;
+  const avH=window.innerHeight - tb - lb - sb - mg - dp - 8;
+  const avW=window.innerWidth - 8;
+  const sw=Math.floor(avW/C);
+  const sh=Math.floor(avH/R);
+  S=Math.max(16, Math.min(sw,sh,52));
   cv.width=C*S; cv.height=R*S;
 }
 resizeCanvas();
 window.addEventListener('resize',()=>{resizeCanvas();if(!running)drawAll();});
 
-// ── BLOQUEAR SCROLL TÁCTIL GLOBAL (evita que la página se mueva al jugar) ──
-document.addEventListener('touchmove', e=>{
-  // Permitir solo dentro del joystick flotante — todo lo demás bloqueado
-  if(!e.target.closest('#floating-joy') && !e.target.closest('#fjoy-base')){
-    e.preventDefault();
-  }
-},{passive:false});
-document.addEventListener('touchstart', e=>{
-  // Bloquear el zoom con doble toque
-  if(e.touches.length>1) e.preventDefault();
-},{passive:false});
+// Bloquear scroll táctil TOTAL — sin excepciones
+document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+document.addEventListener('touchstart',e=>{if(e.touches.length>1)e.preventDefault();},{passive:false});
 
 // ── SUPABASE ────────────────────────────────────────────────────
 const SB_URL='https://irekcyeoumxnwbtonfup.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlyZWtjeWVvdW14bndidG9uZnVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMTczMzAsImV4cCI6MjA5NDc5MzMzMH0.gzmCwhJBeaabl83Q4W6cMhpk0Ofwg0OrHaYou9_ksL0';
@@ -721,163 +669,105 @@ const silaoImg=new Image();silaoImg.src='data:image/jpeg;base64,/9j/4AAQSkZJRgAB
 let wallIdx=0,wallTimer=0;
 const WALL_SWAP=180;
 
-// ── MAPAS MÚLTIPLES (1 por nivel, rotación aleatoria) ────────────
+// ── MAPAS 15×17 — MOBILE-FIRST ──────────────────────────────────
 const MAP_POOL=[
-// Mapa 0 – original clásico
+// Mapa 0
 [
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,3,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,3,1],
-  [1,2,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,2,1],
-  [1,2,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,2,1],
-  [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
-  [1,2,1,1,2,1,2,1,1,1,1,1,1,1,2,1,2,1,1,2,1],
-  [1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1],
-  [1,1,1,1,2,1,1,1,0,0,1,0,0,1,1,1,2,1,1,1,1],
-  [1,1,1,1,2,1,0,0,0,0,0,0,0,0,0,1,2,1,1,1,1],
-  [0,0,0,0,2,0,0,1,1,0,0,0,1,1,0,0,2,0,0,0,0],
-  [1,1,1,1,2,1,0,1,0,0,0,0,0,1,0,1,2,1,1,1,1],
-  [1,1,1,1,2,1,0,0,0,0,0,0,0,0,0,1,2,1,1,1,1],
-  [1,1,1,1,2,1,0,0,1,1,1,1,1,0,0,1,2,1,1,1,1],
-  [1,2,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,1],
-  [1,2,1,1,2,1,1,1,2,1,1,1,2,1,1,1,2,1,1,2,1],
-  [1,3,2,1,2,2,2,2,2,2,1,2,2,2,2,2,2,1,2,3,1],
-  [1,1,2,1,2,1,2,1,1,1,1,1,1,1,2,1,2,1,2,1,1],
-  [1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1,2,2,2,2,1],
-  [1,2,1,1,1,1,1,1,2,1,1,1,2,1,1,1,1,1,1,2,1],
-  [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,3,2,2,2,2,2,1,2,2,2,2,2,3,1],
+  [1,2,1,1,2,1,2,1,2,1,2,1,1,2,1],
+  [1,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+  [1,2,1,1,2,1,1,1,1,1,2,1,1,2,1],
+  [1,2,2,2,2,2,2,1,2,2,2,2,2,2,1],
+  [1,1,1,2,1,0,0,0,0,0,1,2,1,1,1],
+  [1,1,1,2,0,0,0,0,0,0,0,2,1,1,1],
+  [0,0,0,2,0,0,0,0,0,0,0,2,0,0,0],
+  [1,1,1,2,0,0,0,0,0,0,0,2,1,1,1],
+  [1,1,1,2,1,0,0,0,0,0,1,2,1,1,1],
+  [1,2,2,2,2,2,2,1,2,2,2,2,2,2,1],
+  [1,2,1,1,2,1,1,1,1,1,2,1,1,2,1],
+  [1,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+  [1,2,1,1,2,1,2,1,2,1,2,1,1,2,1],
+  [1,3,2,2,2,2,2,1,2,2,2,2,2,3,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ],
-// Mapa 1 – laberinto "espiral"
+// Mapa 1
 [
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,1],
-  [1,2,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,2,1],
-  [1,2,1,2,2,2,2,2,2,1,2,1,2,2,2,2,2,2,1,2,1],
-  [1,2,1,2,1,1,1,1,2,1,2,1,2,1,1,1,1,2,1,2,1],
-  [1,2,1,2,1,2,2,1,2,1,2,1,2,1,2,2,1,2,1,2,1],
-  [1,2,1,2,1,2,0,0,0,0,0,0,0,0,2,1,2,1,2,2,1],
-  [1,2,1,2,1,1,0,1,1,0,1,0,1,0,1,1,2,1,2,1,1],
-  [1,2,1,2,0,0,0,1,0,0,0,0,0,1,0,0,2,1,2,1,1],
-  [0,0,0,2,0,1,0,0,0,0,0,0,0,0,0,1,2,0,0,0,0],
-  [1,2,1,2,0,0,0,1,0,0,0,0,0,1,0,0,2,1,2,1,1],
-  [1,2,1,2,1,1,0,1,0,0,1,0,0,0,1,1,2,1,2,1,1],
-  [1,2,1,2,1,2,0,0,0,0,0,0,0,0,2,1,2,1,2,2,1],
-  [1,2,1,2,1,2,2,1,2,1,2,1,2,1,2,2,1,2,1,2,1],
-  [1,2,1,2,1,1,1,1,2,1,2,1,2,1,1,1,1,2,1,2,1],
-  [1,3,2,2,2,2,2,2,2,1,2,1,2,2,2,2,2,2,2,3,1],
-  [1,1,1,1,1,1,1,1,2,1,2,1,2,1,1,1,1,1,1,1,1],
-  [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
-  [1,2,1,2,1,1,1,1,2,1,1,1,2,1,1,1,1,2,1,2,1],
-  [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,3,2,2,2,2,2,2,2,2,2,2,2,3,1],
+  [1,2,1,1,1,2,1,2,1,2,1,1,1,2,1],
+  [1,2,1,2,2,2,2,2,2,2,2,2,1,2,1],
+  [1,2,2,2,1,1,2,2,2,1,1,2,2,2,1],
+  [1,1,2,1,1,2,2,2,2,2,1,1,2,1,1],
+  [1,2,2,2,2,2,0,0,0,2,2,2,2,2,1],
+  [1,2,1,1,2,0,0,1,0,0,2,1,1,2,1],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [1,2,1,1,2,0,0,1,0,0,2,1,1,2,1],
+  [1,2,2,2,2,2,0,0,0,2,2,2,2,2,1],
+  [1,1,2,1,1,2,2,2,2,2,1,1,2,1,1],
+  [1,2,2,2,1,1,2,2,2,1,1,2,2,2,1],
+  [1,2,1,2,2,2,2,2,2,2,2,2,1,2,1],
+  [1,2,1,1,1,2,1,2,1,2,1,1,1,2,1],
+  [1,3,2,2,2,2,2,2,2,2,2,2,2,3,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ],
-// Mapa 2 – "cruz" con pasajes internos
+// Mapa 2
 [
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,3,2,2,2,1,2,2,2,2,2,2,2,2,2,1,2,2,2,3,1],
-  [1,2,1,2,2,1,2,1,1,1,2,1,1,1,2,1,2,2,1,2,1],
-  [1,2,2,2,1,1,2,1,2,2,2,2,2,1,2,1,1,2,2,2,1],
-  [1,1,1,2,2,2,2,1,2,1,2,1,2,1,2,2,2,2,1,1,1],
-  [1,2,2,2,1,1,1,1,2,1,2,1,2,1,1,1,1,2,2,2,1],
-  [1,2,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,2,1],
-  [1,2,1,1,1,1,2,1,0,0,1,0,0,1,2,1,1,1,1,2,1],
-  [1,2,2,2,2,1,2,0,0,0,0,0,0,0,2,1,2,2,2,2,1],
-  [0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0],
-  [1,2,2,2,2,1,2,0,0,0,0,0,0,0,2,1,2,2,2,2,1],
-  [1,2,1,1,1,1,2,1,0,0,1,0,0,1,2,1,1,1,1,2,1],
-  [1,2,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,2,1],
-  [1,2,2,2,1,1,1,1,2,1,2,1,2,1,1,1,1,2,2,2,1],
-  [1,1,1,2,2,2,2,1,2,1,1,1,2,1,2,2,2,2,1,1,1],
-  [1,2,2,2,1,1,2,1,2,2,2,2,2,1,2,1,1,2,2,2,1],
-  [1,2,1,2,2,1,2,1,1,1,2,1,1,1,2,1,2,2,1,2,1],
-  [1,3,2,2,2,1,2,2,2,2,2,2,2,2,2,1,2,2,2,3,1],
-  [1,1,2,1,1,1,1,1,2,1,2,1,2,1,1,1,1,1,2,1,1],
-  [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-],
-// Mapa 3 – "diamante" abierto
-[
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,3,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,3,1],
-  [1,2,1,1,2,1,2,1,1,2,1,2,1,1,2,1,2,1,1,2,1],
-  [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
-  [1,2,1,2,1,1,1,2,1,1,2,1,1,2,1,1,1,2,1,2,1],
-  [1,2,1,2,1,2,2,2,2,2,2,2,2,2,2,2,1,2,1,2,1],
-  [1,2,2,2,2,2,1,1,2,1,0,1,2,1,1,2,2,2,2,2,1],
-  [1,1,1,2,1,2,1,0,0,0,0,0,0,0,1,2,1,2,1,1,1],
-  [1,1,1,2,1,2,0,0,0,0,0,0,0,0,0,2,1,2,1,1,1],
-  [0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0],
-  [1,1,1,2,1,2,0,0,0,0,0,0,0,0,0,2,1,2,1,1,1],
-  [1,1,1,2,1,2,1,0,0,0,0,0,0,0,1,2,1,2,1,1,1],
-  [1,2,2,2,2,2,1,1,2,1,0,1,2,1,1,2,2,2,2,2,1],
-  [1,2,1,2,1,2,2,2,2,2,2,2,2,2,2,2,1,2,1,2,1],
-  [1,2,1,2,1,1,1,2,1,1,2,1,1,2,1,1,1,2,1,2,1],
-  [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
-  [1,2,1,1,2,1,2,1,1,2,1,2,1,1,2,1,2,1,1,2,1],
-  [1,3,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,3,1],
-  [1,1,2,1,1,1,1,1,2,1,1,1,2,1,1,1,1,1,2,1,1],
-  [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-],
-// Mapa 4 – "túneles" con muchos pasillos
-[
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [1,3,2,2,2,2,2,1,2,2,2,2,2,1,2,2,2,2,2,3,1],
-  [1,2,1,1,1,1,2,1,2,1,1,1,2,1,2,1,1,1,1,2,1],
-  [1,2,1,2,2,1,2,1,2,1,2,1,2,1,2,1,2,2,1,2,1],
-  [1,2,1,2,1,1,2,2,2,1,2,1,2,2,2,1,1,2,1,2,1],
-  [1,2,2,2,2,2,2,1,1,1,2,1,1,1,2,2,2,2,2,2,1],
-  [1,1,1,2,1,1,1,2,2,2,2,2,2,2,1,1,1,2,1,1,1],
-  [1,2,2,2,2,2,2,2,0,0,1,0,0,2,2,2,2,2,2,2,1],
-  [1,2,1,1,1,1,2,0,0,0,0,0,0,0,2,1,1,1,1,2,1],
-  [0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0],
-  [1,2,1,1,1,1,2,0,0,0,0,0,0,0,2,1,1,1,1,2,1],
-  [1,2,2,2,2,2,2,2,0,0,1,0,0,2,2,2,2,2,2,2,1],
-  [1,1,1,2,1,1,1,2,2,2,2,2,2,2,1,1,1,2,1,1,1],
-  [1,2,2,2,2,2,2,1,1,1,2,1,1,1,2,2,2,2,2,2,1],
-  [1,2,1,2,1,1,2,2,2,1,2,1,2,2,2,1,1,2,1,2,1],
-  [1,2,1,2,2,1,2,1,2,1,2,1,2,1,2,1,2,2,1,2,1],
-  [1,2,1,1,1,1,2,1,2,1,1,1,2,1,2,1,1,1,1,2,1],
-  [1,3,2,2,2,2,2,1,2,2,2,2,2,1,2,2,2,2,2,3,1],
-  [1,1,2,1,1,1,1,1,2,1,1,1,2,1,1,1,1,1,2,1,1],
-  [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,3,2,2,2,1,2,2,2,1,2,2,2,3,1],
+  [1,2,1,2,2,1,2,1,2,1,2,2,1,2,1],
+  [1,2,2,2,1,1,2,2,2,1,1,2,2,2,1],
+  [1,1,1,2,2,2,2,1,2,2,2,2,1,1,1],
+  [1,2,2,2,1,2,2,2,2,2,1,2,2,2,1],
+  [1,2,1,2,2,2,0,0,0,2,2,2,1,2,1],
+  [1,2,1,1,1,0,0,1,0,0,1,1,1,2,1],
+  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  [1,2,1,1,1,0,0,1,0,0,1,1,1,2,1],
+  [1,2,1,2,2,2,0,0,0,2,2,2,1,2,1],
+  [1,2,2,2,1,2,2,2,2,2,1,2,2,2,1],
+  [1,1,1,2,2,2,2,1,2,2,2,2,1,1,1],
+  [1,2,2,2,1,1,2,2,2,1,1,2,2,2,1],
+  [1,2,1,2,2,1,2,1,2,1,2,2,1,2,1],
+  [1,3,2,2,2,1,2,2,2,1,2,2,2,3,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
 ],
 ];
-// Orden aleatorio de mapas por nivel
+
 let mapOrder=[];
 function shuffleMapOrder(){
   mapOrder=[...Array(MAP_POOL.length).keys()].sort(()=>Math.random()-0.5);
 }
 shuffleMapOrder();
 function getMapForLevel(lv){
-  // Para niveles > pool, rotamos aleatoriamente
   return MAP_POOL[mapOrder[(lv-1)%MAP_POOL.length]];
 }
 
-// Posición fruta bonus (centro)
-const FRUIT_POS={r:10,c:10};
-// Solo portal horizontal fila 9: izquierda ↔ derecha (los verticales atoraban)
+const FRUIT_POS={r:8,c:7};
 const PORTALS=[
-  {fr:9,fc:-1,tr:9,tc:C-1},
-  {fr:9,fc:C,tr:9,tc:0},
+  {fr:8,fc:-1,tr:8,tc:C-1},
+  {fr:8,fc:C,tr:8,tc:0},
 ];
-
-// Frutas del nivel con emoji y puntos
 const FRUITS=[
   {e:'🍒',pts:100},{e:'🍓',pts:200},{e:'🍊',pts:300},
   {e:'🍋',pts:400},{e:'🍩',pts:500},{e:'🍕',pts:750},
   {e:'⭐',pts:1000},{e:'💎',pts:2000},
 ];
 
+const GHOST_DEFS=[
+  {lbl:'ALCALDE',col:'#E24B4A'},
+  {lbl:'DIPUTADO',col:'#F0997B'},
+  {lbl:'AUDITOR',col:'#85B7EB'},
+  {lbl:'TESORERO',col:'#97C459'},
+];
+const SPAWN_G=[{r:6,c:6},{r:6,c:8},{r:9,c:6},{r:9,c:8}];
+const PAC_START={r:3,c:7};
+
 let map,pac,gh,score,lives,powered,pTimer,dir,nd,raf,running,dots,level=1,hiScore=0,paused=false,fc=0;
 let playerNick='Anónimo',scoreSaved=false;
 
-// Apodos automáticos silaoenses
 const AUTO_NICKS=['La Bandera 🦅','El Potencia 💪','Chilango 🌮','La Catedral ⛪','El Audi 🚗','Silao Power ⚡','El Rincón 🏠','La Llave 🔑','El Pozole 🍲','La Guerrera 💥','Don Beto 🎩','El Corrido 🎸','La Mera Mera 👑','El Chido 😎','La Joya 💎','El Toro 🐂','El Jaripeo 🤠','El Compa 🤝','La Marchanta 🛒','El Bravo 🦁'];
 function randomNick(){return AUTO_NICKS[Math.floor(Math.random()*AUTO_NICKS.length)];}
 
-// Pre-llenar apodo aleatorio al cargar
 window.addEventListener('DOMContentLoaded',()=>{
   const ni=document.getElementById('nick-input');
   if(ni&&!ni.value)ni.value=randomNick();
@@ -885,15 +775,6 @@ window.addEventListener('DOMContentLoaded',()=>{
 let fruitActive=false,fruitTimer=0,fruitEmoji='🍒',fruitPts=100,bigTimer=0;
 let fruitR=FRUIT_POS.r,fruitC=FRUIT_POS.c;
 const FRUIT_DURATION=400;
-const GHOST_DEFS=[
-  {lbl:'ALCALDE',col:'#E24B4A'},
-  {lbl:'DIPUTADO',col:'#F0997B'},
-  {lbl:'AUDITOR',col:'#85B7EB'},
-  {lbl:'TESORERO',col:'#97C459'},
-];
-// Posiciones spawn fantasmas (zona central)
-const SPAWN_G=[{r:8,c:8},{r:8,c:12},{r:11,c:8},{r:11,c:12}];
-const PAC_START={r:4,c:10};
 
 function mkMap(){
   return getMapForLevel(level).map(row=>[...row]);
@@ -965,8 +846,7 @@ function canMove(r,c,dr,dc,sp){
 
 // ── PORTAL ────────────────────────────────────────────────────
 function applyPortal(e){
-  // Túnel horizontal fila 9: si sale por la izquierda aparece por la derecha y viceversa
-  if(Math.round(e.r-0.5)===9){
+  if(Math.round(e.r-0.5)===8){
     if(e.c < 0.5)  { e.c = C - 0.6; return; }
     if(e.c > C - 0.5){ e.c = 0.6;   return; }
   }
@@ -1007,7 +887,7 @@ function update(){
   fc++;
   wallTimer++;if(wallTimer>=WALL_SWAP){wallTimer=0;wallIdx=(wallIdx+1)%PARTIES.length;}
 
-  const sp=Math.min(0.10+(level-1)*0.012, 0.28);
+  const sp=Math.min(0.065+(level-1)*0.004, 0.16);
   // intentar dirección deseada
   if(nd.x&&canMove(pac.r,pac.c,0,nd.x,sp)){dir.x=nd.x;dir.y=0;}
   else if(nd.y&&canMove(pac.r,pac.c,nd.y,0,sp)){dir.y=nd.y;dir.x=0;}
@@ -1119,12 +999,12 @@ function drawAll(){
     if(v===WALL) drawWall(x,y);
     else if(v===DOT){
       ctx.fillStyle='#000';
-      ctx.beginPath();ctx.arc(x+S/2,y+S/2,Math.max(2.5,S*0.14)+1,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(x+S/2,y+S/2,Math.max(3,S*0.18)+1,0,Math.PI*2);ctx.fill();
       ctx.fillStyle='#FFD700';
-      ctx.beginPath();ctx.arc(x+S/2,y+S/2,Math.max(2,S*0.12),0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(x+S/2,y+S/2,Math.max(2.5,S*0.16),0,Math.PI*2);ctx.fill();
     }
     else if(v===PWR){
-      const pulse=S*0.22+Math.sin(fc*0.12)*S*0.08;
+      const pulse=S*0.28+Math.sin(fc*0.12)*S*0.08;
       ctx.fillStyle='#000';
       ctx.beginPath();ctx.arc(x+S/2,y+S/2,pulse+2,0,Math.PI*2);ctx.fill();
       ctx.fillStyle='#ff44ff';
@@ -1135,7 +1015,7 @@ function drawAll(){
   }
   // portales — indica los túneles horizontales
   const tcols=['#ff00ff','#c400ff'];
-  [[9,0],[9,C-1]].forEach(([fr,fc2],i)=>drawPortalEffect(fr,fc2,tcols[i%2]));
+  [[8,0],[8,C-1]].forEach(([fr,fc2],i)=>drawPortalEffect(fr,fc2,tcols[i%2]));
   // fruta bonus
   if(fruitActive){
     const x=fruitC*S+S/2,y=fruitR*S+S/2;
@@ -1149,7 +1029,7 @@ function drawAll(){
   const px=pac.c*S,py=pac.r*S;
   const fa=Math.atan2(dir.y,dir.x)||0;
   const a=pac.mo;
-  const bigScale=bigTimer>0?(1+0.7*Math.min(bigTimer/30,1)):1;
+  const bigScale=bigTimer>0?(1+0.9*Math.min(bigTimer/30,1)):1;
   const pr0=S*(pacSize+0.04)*bigScale, pr1=S*pacSize*bigScale;
   // glow when big
   if(bigTimer>0){ctx.save();ctx.shadowColor='#FFD700';ctx.shadowBlur=18+Math.sin(fc*0.3)*8;ctx.restore();}
@@ -1168,7 +1048,7 @@ function drawAll(){
   ctx.beginPath();ctx.moveTo(px,py);ctx.arc(px,py,pr1,fa+a,fa+Math.PI*2-a);ctx.closePath();ctx.stroke();
   // fantasmas – comic style with black outlines
   gh.forEach(g=>{
-    const x=g.c*S,y=g.r*S,r=S*0.44;
+    const x=g.c*S,y=g.r*S,r=S*0.32;
     // black outline (larger shape)
     ctx.fillStyle='#000';
     ctx.beginPath();ctx.arc(x,y-r*0.1,r+2,Math.PI,0);ctx.lineTo(x+r+2,y+r*0.9+2);
@@ -1333,93 +1213,81 @@ async function endGame(win){
 
 // ── CONTROLS ──────────────────────────────────────────────────
 function setDir(dx,dy){nd={x:dx,y:dy};}
-document.getElementById('btn-u').addEventListener('pointerdown',()=>setDir(0,-1));
-document.getElementById('btn-d').addEventListener('pointerdown',()=>setDir(0,1));
-document.getElementById('btn-l').addEventListener('pointerdown',()=>setDir(-1,0));
-document.getElementById('btn-r').addEventListener('pointerdown',()=>setDir(1,0));
-document.getElementById('btn-pause').addEventListener('click',()=>{paused=!paused;pauseBgMusic(paused);});
+document.getElementById('jact-pause').addEventListener('click',()=>{paused=!paused;pauseBgMusic(paused);});
+document.getElementById('jact-start').addEventListener('click',startGame);
 
-// ── MODO INMERSIVO ───────────────────────────────────────────────
-function enterFullscreen(){
-  document.body.classList.add('game-fullscreen');
-  // Intentar fullscreen nativo
-  const el=document.documentElement;
-  if(el.requestFullscreen) el.requestFullscreen().catch(()=>{});
-  // Esperar al siguiente frame para que el DOM ya haya aplicado los estilos
-  requestAnimationFrame(()=>{
-    resizeCanvas();
-    drawAll();
-    startGame();
-  });
-}
-function exitFullscreen(){
-  document.body.classList.remove('game-fullscreen');
-  if(document.fullscreenElement) document.exitFullscreen().catch(()=>{});
-  requestAnimationFrame(()=>{
-    resizeCanvas();
-    drawAll();
-  });
-  paused=true; pauseBgMusic(true);
-}
-document.getElementById('btn-enter-fullscreen').addEventListener('click', enterFullscreen);
-document.getElementById('btn-exit-fullscreen').addEventListener('click', exitFullscreen);
-
-// ── JOYSTICK FLOTANTE ────────────────────────────────────────────
+// ── JOYSTICK TÁCTIL PROFESIONAL ──────────────────────────────────
 (function(){
-  const base=document.getElementById('fjoy-base');
-  const thumb=document.getElementById('fjoy-thumb');
+  const base=document.getElementById('joy-base');
+  const thumb=document.getElementById('joy-thumb');
   if(!base)return;
-  const DEAD=12;
-  let active=false, cx=0, cy=0, lastKey='', dirTimer=null;
 
-  function getCenter(){
-    const r=base.getBoundingClientRect();
-    return{x:r.left+r.width/2, y:r.top+r.height/2};
-  }
-  function apply(dx,dy){
+  const DEAD=10;   // zona muerta en px
+  const MAX_R=32;  // radio máximo del thumb
+  let active=false, startX=0, startY=0, lastKey='', dirTimer=null;
+
+  function clampThumb(dx,dy){
     const dist=Math.hypot(dx,dy);
+    if(dist===0) return {tx:0,ty:0};
+    const clamped=Math.min(dist,MAX_R);
+    return {tx:dx/dist*clamped, ty:dy/dist*clamped};
+  }
+
+  function applyInput(dx,dy){
+    const dist=Math.hypot(dx,dy);
+    const {tx,ty}=clampThumb(dx,dy);
+    thumb.style.transform=`translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px))`;
+
     if(dist<DEAD){
-      thumb.style.transform='translate(-50%,-50%)';
-      clearInterval(dirTimer);dirTimer=null;lastKey='';return;
+      thumb.classList.remove('active');
+      clearInterval(dirTimer); dirTimer=null; lastKey='';
+      return;
     }
-    const maxD=46;
-    const ratio=Math.min(dist,maxD)/dist;
-    thumb.style.transform=`translate(calc(-50% + ${dx*ratio}px),calc(-50% + ${dy*ratio}px))`;
-    let dc=0,dr=0;
+    thumb.classList.add('active');
+
+    // Dirección dominante
+    let dc=0, dr=0;
     if(Math.abs(dx)>=Math.abs(dy)) dc=dx>0?1:-1;
     else dr=dy>0?1:-1;
-    const k=dc+'_'+dr;
+
+    const k=`${dc}_${dr}`;
     if(k!==lastKey){
-      lastKey=k; setDir(dc,dr);
+      lastKey=k;
+      setDir(dc,dr);
       clearInterval(dirTimer);
-      dirTimer=setInterval(()=>setDir(dc,dr),80);
+      dirTimer=setInterval(()=>setDir(dc,dr),90);
     }
   }
+
   function onStart(e){
-    e.preventDefault(); active=true;
-    const c=getCenter();
+    e.preventDefault();
+    active=true;
     const pt=e.touches?e.touches[0]:e;
-    cx=c.x; cy=c.y;
-    apply(pt.clientX-cx,pt.clientY-cy);
+    startX=pt.clientX; startY=pt.clientY;
+    applyInput(0,0);
   }
   function onMove(e){
     e.preventDefault();
     if(!active)return;
     const pt=e.touches?e.touches[0]:e;
-    apply(pt.clientX-cx,pt.clientY-cy);
+    applyInput(pt.clientX-startX, pt.clientY-startY);
   }
-  function onEnd(){
+  function onEnd(e){
+    e.preventDefault();
     active=false; lastKey='';
-    clearInterval(dirTimer);dirTimer=null;
+    clearInterval(dirTimer); dirTimer=null;
     thumb.style.transform='translate(-50%,-50%)';
+    thumb.classList.remove('active');
   }
-  base.addEventListener('touchstart',onStart,{passive:false});
-  base.addEventListener('touchmove',onMove,{passive:false});
-  base.addEventListener('touchend',onEnd);
-  base.addEventListener('touchcancel',onEnd);
-  base.addEventListener('mousedown',onStart);
-  window.addEventListener('mousemove',e=>{if(active)onMove(e);});
-  window.addEventListener('mouseup',onEnd);
+
+  base.addEventListener('touchstart', onStart, {passive:false});
+  base.addEventListener('touchmove',  onMove,  {passive:false});
+  base.addEventListener('touchend',   onEnd,   {passive:false});
+  base.addEventListener('touchcancel',onEnd,   {passive:false});
+  // Mouse para pruebas en desktop
+  base.addEventListener('mousedown', onStart);
+  document.addEventListener('mousemove', e=>{if(active)onMove(e);});
+  document.addEventListener('mouseup',   e=>{if(active)onEnd(e);});
 })();
 
 document.addEventListener('keydown',e=>{
@@ -1496,7 +1364,8 @@ function renderChips(){
 renderChips();
 
 // Pac size – fijo XL para todos
-const pacSize=0.65;
+// Tamaño pac-man relativo a celda (0.42 = grande y visible)
+const pacSize=0.52;
 
 // Champions modal
 document.getElementById('btn-campeones').addEventListener('click',()=>{
