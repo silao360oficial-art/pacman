@@ -22,7 +22,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#1a0033;font-family:
   background:linear-gradient(135deg,#2d0057,#4a0080,#2d0057);
   border-bottom:4px solid #000;
   box-shadow:0 3px 0 #7b00ff,inset 0 1px 0 rgba(255,255,255,0.15);}
-#brand-img{width:38px;height:38px;border-radius:50%;object-fit:cover;
+#brand-img{width:48px;height:48px;border-radius:50%;object-fit:cover;
   border:3px solid #000;
   box-shadow:3px 3px 0 #000,0 0 12px #c400ff;}
 #brand-text{flex:1;line-height:1.1;}
@@ -95,7 +95,7 @@ canvas{display:block;
 /* ── JOYSTICK FIJO — debajo del canvas, nunca se mueve ── */
 #dpad{
   width:100%;flex-shrink:0;
-  display:flex;align-items:center;justify-content:space-around;
+  display:flex;flex-direction:row-reverse;align-items:center;justify-content:space-around;
   padding:6px 12px;
   background:linear-gradient(#1a0033,#0d001a);
   border-top:4px solid #000;
@@ -153,7 +153,7 @@ canvas{display:block;
   #main{flex-direction:column;}
   /* Compactar barras para dar más espacio vertical al canvas */
   #topbar{padding:3px 6px;gap:4px;}
-  #brand-img{width:30px;height:30px;}
+  #brand-img{width:40px;height:40px;}
   #brand-title{font-size:15px;}
   #brand-sub{font-size:7px;}
   #lbar{padding:1px 6px;}
@@ -178,11 +178,11 @@ canvas{display:block;
   #main{
     position:fixed;inset:0;
     display:flex;flex-direction:row;
-    overflow:hidden;
+    overflow:hidden;margin:0;padding:0;
   }
   #cleft{
     flex:1;display:flex;align-items:center;justify-content:center;
-    overflow:hidden;order:1;
+    overflow:hidden;order:1;margin:0;padding:0;min-width:0;
   }
   #cwrap{
     padding:0;width:100%;height:100%;
@@ -191,25 +191,26 @@ canvas{display:block;
   }
   canvas{border:none!important;box-shadow:none!important;}
 
-  /* Joystick + botones: columna fija a la DERECHA (para diestros) */
+  /* Joystick + botones: columna COMPACTA fija a la DERECHA (para diestros) */
   #dpad{
     position:fixed;right:0;top:0;bottom:0;
-    width:140px;height:100%;
+    width:96px;height:100%;
     flex-direction:column;justify-content:center;
-    gap:18px;padding:10px;
-    border-top:none;border-left:4px solid #000;
+    gap:10px;padding:4px;
+    border-top:none;border-left:3px solid #000;
     box-shadow:-2px 0 0 #5500aa;
     order:2;z-index:50;
+    background:linear-gradient(#1a0033,#0d001a);
   }
-  #joy-base{width:108px;height:108px;}
-  #joy-thumb{width:42px;height:42px;}
-  #joy-actions{flex-direction:column;gap:10px;}
-  .jact{width:54px;height:54px;font-size:11px;}
+  #joy-base{width:74px;height:74px;}
+  #joy-thumb{width:30px;height:30px;}
+  #joy-actions{flex-direction:column;gap:6px;}
+  .jact{width:38px;height:38px;font-size:8px;line-height:1.1;}
 }
 /* PANTALLAS MUY PEQUEÑAS — ocultar links externos, dejar espacio a SALIR */
 @media(max-width:430px){
   .tbtn-app,.tbtn-web,.tbtn-fb{display:none!important;}
-  #brand-img{width:30px;height:30px;}
+  #brand-img{width:36px;height:36px;}
   #brand-title{font-size:15px;}
   #brand-sub{font-size:7px;}
 }
@@ -605,49 +606,85 @@ document.getElementById('btn-mute').addEventListener('click',()=>{
 
 // Mapa: 21 cols x 21 filas
 // Mapa: 15 cols x 17 filas  — MOBILE-FIRST (celdas grandes)
-const C=15,R=17,WALL=1,DOT=2,PWR=3,EMP=0,FRUIT_CELL=4;
+let C=15,R=17;
+const WALL=1,DOT=2,PWR=3,EMP=0,FRUIT_CELL=4;
+
+function isLandscapeMode(){
+  // Móvil en horizontal (hasta 1000px) O escritorio ancho con proporción tipo landscape
+  const mobileLandscape = window.innerWidth>window.innerHeight && window.innerWidth<=1000;
+  const desktopWide = window.innerWidth>=700 && window.innerWidth > window.innerHeight*1.15;
+  return mobileLandscape || desktopWide;
+}
+// Ajustar grid inicial inmediatamente si la página carga ya en landscape
+if(isLandscapeMode()){ C=23; R=15; }
 let S=20;
 
 // Tamaño pac-man relativo a celda
 // pacSize defined below near draw functions
 
 function resizeCanvas(){
-  const isLandscapeImmersive = window.innerWidth>window.innerHeight && window.innerWidth<=1000;
+  // Inmersivo solo aplica a MÓVIL en landscape real (pantalla físicamente girada, dpad lateral visible)
+  const isMobileLandscapeImmersive = window.innerWidth>window.innerHeight && window.innerWidth<=1000;
   const topbar=document.getElementById('topbar');
   const lbar=document.getElementById('lbar');
   const sbar=document.getElementById('sbar');
   const msg=document.getElementById('msg');
   const dpad=document.getElementById('dpad');
 
-  if(isLandscapeImmersive){
-    // Modo inmersivo: dpad es columna lateral de ancho fijo (140px), sin barras arriba
-    const dpW = dpad?dpad.offsetWidth:140;
-    const avW = window.innerWidth - dpW - 8;
-    const avH = window.innerHeight - 8;
+  if(isMobileLandscapeImmersive){
+    // Modo inmersivo: dpad es columna lateral compacta, el resto es 100% juego
+    const dpW = dpad?dpad.offsetWidth:96;
+    const avW = window.innerWidth - dpW - 4;
+    const avH = window.innerHeight - 4;
     const sw=Math.floor(avW/C);
     const sh=Math.floor(avH/R);
-    S=Math.max(14, Math.min(sw,sh,60));
+    S=Math.max(14, Math.min(sw,sh)); // SIN tope artificial — usa el máximo real disponible
     cv.width=C*S; cv.height=R*S;
     return;
   }
 
-  // Calcular altura disponible para el canvas (modo normal/vertical)
+  // Modo normal (vertical móvil, o escritorio ancho con rpanel) — C/R ya reflejan el mapa correcto
+  const rpanel=document.getElementById('rpanel');
+  const rpW=(rpanel && getComputedStyle(rpanel).display!=='none') ? rpanel.offsetWidth : 0;
   const tb=topbar?topbar.offsetHeight:0;
   const lb=lbar?lbar.offsetHeight:0;
   const sb=sbar?sbar.offsetHeight:0;
   const mg=msg?msg.offsetHeight:0;
   const dp=dpad?dpad.offsetHeight:0;
   const avH=window.innerHeight - tb - lb - sb - mg - dp - 8;
-  const avW=window.innerWidth - 8;
+  const avW=window.innerWidth - rpW - 8;
   const sw=Math.floor(avW/C);
   const sh=Math.floor(avH/R);
   S=Math.max(16, Math.min(sw,sh,64));
   cv.width=C*S; cv.height=R*S;
 }
 resizeCanvas();
-window.addEventListener('resize',()=>{resizeCanvas();if(!running)drawAll();});
+let lastOrientation = isLandscapeMode();
+function handleOrientationFlip(){
+  const nowLandscape = isLandscapeMode();
+  if(nowLandscape !== lastOrientation){
+    lastOrientation = nowLandscape;
+    if(running){
+      // Reiniciar layout con el nuevo grid (C/R cambian de tamaño) preservando score/vidas/nivel
+      cancelAnimationFrame(raf);
+      init(false);
+      resizeCanvas();
+      drawAll();
+      raf=requestAnimationFrame(loop);
+    } else {
+      // En menú/pausa: solo recalcular grid para que el próximo init() use el correcto
+      if(isLandscapeMode()){ C=23; R=15; } else { C=15; R=17; }
+      resizeCanvas();
+      drawAll();
+    }
+  } else {
+    resizeCanvas();
+    if(!running) drawAll();
+  }
+}
+window.addEventListener('resize', handleOrientationFlip);
 window.addEventListener('orientationchange',()=>{
-  setTimeout(()=>{resizeCanvas();if(!running)drawAll();},150);
+  setTimeout(handleOrientationFlip, 150);
 });
 
 // Bloquear scroll táctil TOTAL — sin excepciones
@@ -801,20 +838,80 @@ const MAP_POOL=[
 ],
 ];
 
+// ── MAPAS LANDSCAPE 23×15 — aprovechan el ancho de pantalla horizontal ──
+const MAP_POOL_LANDSCAPE=[
+// Mapa L0
+[
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,1],
+  [1,2,1,1,1,2,1,1,1,1,1,2,1,1,1,1,1,2,1,1,1,2,1],
+  [1,2,1,2,2,2,2,2,2,2,1,2,1,2,2,2,2,2,2,2,1,2,1],
+  [1,2,2,2,1,1,1,1,1,2,2,2,2,2,1,1,1,1,1,2,2,2,1],
+  [1,1,1,2,1,0,0,0,1,2,1,1,1,2,1,0,0,0,1,2,1,1,1],
+  [1,1,1,2,0,0,0,0,0,2,1,1,1,2,0,0,0,0,0,2,1,1,1],
+  [0,0,0,2,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,2,0,0,0],
+  [1,1,1,2,0,0,0,0,0,2,1,1,1,2,0,0,0,0,0,2,1,1,1],
+  [1,1,1,2,1,0,0,0,1,2,1,1,1,2,1,0,0,0,1,2,1,1,1],
+  [1,2,2,2,1,1,1,1,1,2,2,2,2,2,1,1,1,1,1,2,2,2,1],
+  [1,2,1,2,2,2,2,2,2,2,1,2,1,2,2,2,2,2,2,2,1,2,1],
+  [1,2,1,1,1,2,1,1,1,1,1,2,1,1,1,1,1,2,1,1,1,2,1],
+  [1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+],
+// Mapa L1
+[
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,1],
+  [1,2,1,2,1,1,1,1,1,2,1,2,1,2,1,1,1,1,1,2,1,2,1],
+  [1,2,1,2,2,2,2,2,2,2,1,2,1,2,2,2,2,2,2,2,1,2,1],
+  [1,2,1,1,1,2,1,1,2,1,1,2,1,1,2,1,1,2,1,1,1,2,1],
+  [1,2,2,2,1,2,1,2,1,2,2,2,2,2,1,2,1,2,1,2,2,2,1],
+  [1,1,1,2,1,0,0,0,1,2,1,1,1,2,1,0,0,0,1,2,1,1,1],
+  [0,0,0,2,0,0,0,0,0,2,0,0,0,2,0,0,0,0,0,2,0,0,0],
+  [1,1,1,2,1,0,0,0,1,2,1,1,1,2,1,0,0,0,1,2,1,1,1],
+  [1,2,2,2,1,2,1,2,1,2,2,2,2,2,1,2,1,2,1,2,2,2,1],
+  [1,2,1,1,1,2,1,1,2,1,1,2,1,1,2,1,1,2,1,1,1,2,1],
+  [1,2,1,2,2,2,2,2,2,2,1,2,1,2,2,2,2,2,2,2,1,2,1],
+  [1,2,1,2,1,1,1,1,1,2,1,2,1,2,1,1,1,1,1,2,1,2,1],
+  [1,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,1],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+],
+];
+
 let mapOrder=[];
+let mapOrderL=[];
 function shuffleMapOrder(){
   mapOrder=[...Array(MAP_POOL.length).keys()].sort(()=>Math.random()-0.5);
+  mapOrderL=[...Array(MAP_POOL_LANDSCAPE.length).keys()].sort(()=>Math.random()-0.5);
 }
 shuffleMapOrder();
 function getMapForLevel(lv){
+  if(isLandscapeMode()){
+    return MAP_POOL_LANDSCAPE[mapOrderL[(lv-1)%MAP_POOL_LANDSCAPE.length]];
+  }
   return MAP_POOL[mapOrder[(lv-1)%MAP_POOL.length]];
 }
 
-const FRUIT_POS={r:8,c:7};
-const PORTALS=[
-  {fr:8,fc:-1,tr:8,tc:C-1},
-  {fr:8,fc:C,tr:8,tc:0},
-];
+// Posiciones de fruta, portales, spawns y arranque — dependen de orientación (portrait 15x17 vs landscape 23x15)
+function getFruitPos(){
+  return isLandscapeMode() ? {r:7,c:9} : {r:8,c:7};
+}
+function getPortals(){
+  const fr = isLandscapeMode() ? 7 : 8;
+  return [
+    {fr:fr,fc:-1,tr:fr,tc:C-1},
+    {fr:fr,fc:C,tr:fr,tc:0},
+  ];
+}
+function getSpawnG(){
+  return isLandscapeMode()
+    ? [{r:6,c:6},{r:8,c:6},{r:6,c:16},{r:8,c:16}]
+    : [{r:6,c:6},{r:6,c:8},{r:9,c:6},{r:9,c:8}];
+}
+function getPacStart(){
+  return isLandscapeMode() ? {r:3,c:11} : {r:3,c:7};
+}
+
 const FRUITS=[
   {e:'🍒',pts:100},{e:'🍓',pts:200},{e:'🍊',pts:300},
   {e:'🍋',pts:400},{e:'🍩',pts:500},{e:'🍕',pts:750},
@@ -827,9 +924,6 @@ const GHOST_DEFS=[
   {lbl:'AUDITOR',col:'#85B7EB'},
   {lbl:'TESORERO',col:'#97C459'},
 ];
-const SPAWN_G=[{r:6,c:6},{r:6,c:8},{r:9,c:6},{r:9,c:8}];
-const PAC_START={r:3,c:7};
-
 let map,pac,gh,score,lives,powered,pTimer,dir,nd,raf,running,dots,level=1,hiScore=0,paused=false,fc=0;
 let playerNick='Anónimo',scoreSaved=false;
 
@@ -841,7 +935,7 @@ window.addEventListener('DOMContentLoaded',()=>{
   if(ni&&!ni.value)ni.value=randomNick();
 });
 let fruitActive=false,fruitTimer=0,fruitEmoji='🍒',fruitPts=100,bigTimer=0;
-let fruitR=FRUIT_POS.r,fruitC=FRUIT_POS.c;
+let fruitR=8,fruitC=7; // se actualiza en init() según orientación
 const FRUIT_DURATION=400;
 
 function mkMap(){
@@ -853,19 +947,30 @@ function countDots(m){
 }
 
 function init(resetLives=true){
+  // Fijar el grid (C,R) según orientación ANTES de construir el mapa
+  if(isLandscapeMode()){ C=23; R=15; } else { C=15; R=17; }
+
   if(resetLives){shuffleMapOrder();} // new game = new random order
   // When level changes, update the map order slot randomly
-  if(!resetLives){ mapOrder[(level-1)%MAP_POOL.length]=Math.floor(Math.random()*MAP_POOL.length); }
+  const poolLen = isLandscapeMode() ? MAP_POOL_LANDSCAPE.length : MAP_POOL.length;
+  if(!resetLives){
+    if(isLandscapeMode()) mapOrderL[(level-1)%poolLen]=Math.floor(Math.random()*poolLen);
+    else mapOrder[(level-1)%poolLen]=Math.floor(Math.random()*poolLen);
+  }
   map=mkMap();fc=0;wallTimer=0;scoreSaved=false;
   fruitActive=false;fruitTimer=0;
   powered=false;pTimer=0;
   dir={x:0,y:0};nd={x:1,y:0};
-  pac={r:PAC_START.r+0.5,c:PAC_START.c+0.5,mo:0,md:1};
+  const ps=getPacStart();
+  pac={r:ps.r+0.5,c:ps.c+0.5,mo:0,md:1};
   dots=countDots(map);
+  const spawns=getSpawnG();
   gh=GHOST_DEFS.map((g,i)=>{
-    const s=SPAWN_G[i];
+    const s=spawns[i];
     return{r:s.r+0.5,c:s.c+0.5,dr:0,dc:[1,-1,1,-1][i],lbl:g.lbl,col:g.col,scared:false,eaten:false,moveTimer:0};
   });
+  const fp=getFruitPos();
+  fruitR=fp.r; fruitC=fp.c;
   if(resetLives){score=0;lives=5;level=1;}
   updateUI();msgEl.textContent='';
 }
@@ -914,7 +1019,8 @@ function canMove(r,c,dr,dc,sp){
 
 // ── PORTAL ────────────────────────────────────────────────────
 function applyPortal(e){
-  if(Math.round(e.r-0.5)===8){
+  const tunnelRow = isLandscapeMode() ? 7 : 8;
+  if(Math.round(e.r-0.5)===tunnelRow){
     if(e.c < 0.5)  { e.c = C - 0.6; return; }
     if(e.c > C - 0.5){ e.c = 0.6;   return; }
   }
@@ -1016,7 +1122,7 @@ function update(){
         sndEatGhost();
         // TERREMOTO al comer fantasma
         triggerQuake(null);
-        const s=SPAWN_G[i];g.r=s.r+0.5;g.c=s.c+0.5;g.dr=0;g.dc=[1,-1,1,-1][i];
+        const s=getSpawnG()[i];g.r=s.r+0.5;g.c=s.c+0.5;g.dr=0;g.dc=[1,-1,1,-1][i];
         msgEl.textContent='🗑️ ¡'+g.lbl+' capturado!';
         setTimeout(()=>{if(running)msgEl.textContent='';},900);
       }else if(!powered){
@@ -1024,8 +1130,10 @@ function update(){
         // EXPLOSIÓN cuando pac muere
         sndDeath();
         spawnExplosion(pac.c*S, pac.r*S);
-        pac.r=PAC_START.r+0.5;pac.c=PAC_START.c+0.5;dir={x:0,y:0};nd={x:1,y:0};
-        gh.forEach((g,j)=>{const s=SPAWN_G[j];g.r=s.r+0.5;g.c=s.c+0.5;g.dr=0;g.dc=[1,-1,1,-1][j];g.scared=false;});
+        const ps2=getPacStart();
+        pac.r=ps2.r+0.5;pac.c=ps2.c+0.5;dir={x:0,y:0};nd={x:1,y:0};
+        const spawns2=getSpawnG();
+        gh.forEach((g,j)=>{const s=spawns2[j];g.r=s.r+0.5;g.c=s.c+0.5;g.dr=0;g.dc=[1,-1,1,-1][j];g.scared=false;});
         if(lives<=0){endGame(false);return;}
         msgEl.textContent='😱 ¡Te atraparon! Vidas: '+['❤️❤️','❤️',''][2-lives];
         setTimeout(()=>{if(running)msgEl.textContent='';},1400);
@@ -1083,7 +1191,8 @@ function drawAll(){
   }
   // portales — indica los túneles horizontales
   const tcols=['#ff00ff','#c400ff'];
-  [[8,0],[8,C-1]].forEach(([fr,fc2],i)=>drawPortalEffect(fr,fc2,tcols[i%2]));
+  const tRow = isLandscapeMode() ? 7 : 8;
+  [[tRow,0],[tRow,C-1]].forEach(([fr,fc2],i)=>drawPortalEffect(fr,fc2,tcols[i%2]));
   // fruta bonus
   if(fruitActive){
     const x=fruitC*S+S/2,y=fruitR*S+S/2;
@@ -1098,6 +1207,7 @@ function drawAll(){
   const fa=Math.atan2(dir.y,dir.x)||0;
   const a=pac.mo;
   const bigScale=bigTimer>0?(1+0.9*Math.min(bigTimer/30,1)):1;
+  const pacSize=getPacSize();
   const pr0=S*(pacSize+0.04)*bigScale, pr1=S*pacSize*bigScale;
   // glow when big
   if(bigTimer>0){ctx.save();ctx.shadowColor='#FFD700';ctx.shadowBlur=18+Math.sin(fc*0.3)*8;ctx.restore();}
@@ -1116,7 +1226,8 @@ function drawAll(){
   ctx.beginPath();ctx.moveTo(px,py);ctx.arc(px,py,pr1,fa+a,fa+Math.PI*2-a);ctx.closePath();ctx.stroke();
   // fantasmas – comic style with black outlines
   gh.forEach(g=>{
-    const x=g.c*S,y=g.r*S,r=S*0.32;
+    const ghostSize=(window.innerWidth>window.innerHeight && window.innerWidth<=1000)?0.38:0.32;
+    const x=g.c*S,y=g.r*S,r=S*ghostSize;
     // black outline (larger shape)
     ctx.fillStyle='#000';
     ctx.beginPath();ctx.arc(x,y-r*0.1,r+2,Math.PI,0);ctx.lineTo(x+r+2,y+r*0.9+2);
@@ -1390,7 +1501,8 @@ function startGame(){
   document.getElementById('ov-title').innerHTML='ENCUESTA SILAO<br><span style="font-family:Rajdhani,sans-serif;font-size:13px;letter-spacing:3px;color:#9bc;-webkit-text-fill-color:#9bc;">PAC-MAN POLÍTICO</span>';
   document.getElementById('overlay').classList.add('hidden');
   cancelAnimationFrame(raf);running=false;paused=false;fc=0;
-  resizeCanvas();init(true);drawAll();
+  if(isLandscapeMode()){ C=23; R=15; } else { C=15; R=17; }
+  init(true);resizeCanvas();drawAll();
   const cd=document.getElementById('countdown');
   let n=5;
   cd.style.display='block';
@@ -1433,7 +1545,13 @@ renderChips();
 
 // Pac size – fijo XL para todos
 // Tamaño pac-man relativo a celda (0.42 = grande y visible)
-const pacSize=0.52;
+const pacSizeBase=0.52;
+function getPacSize(){
+  const isLandscapeImmersive = window.innerWidth>window.innerHeight && window.innerWidth<=1000;
+  // En landscape el canvas ya es más grande (más px por celda), así Pac-Man crece en términos absolutos.
+  // Además le damos un boost relativo moderado y seguro (no 2x literal: eso lo encimaría con celdas vecinas).
+  return isLandscapeImmersive ? 0.62 : pacSizeBase;
+}
 
 // Champions modal
 document.getElementById('btn-campeones').addEventListener('click',()=>{
